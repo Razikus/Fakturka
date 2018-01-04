@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>box.png</file>
+        <file>profile.png</file>
+        <file>sent-mail.png</file>
+        <file>settings-gears.png</file>
+        <file>seller.png</file>
+        <file>save.png</file>
+        <file>receipt.png</file>
+        <file>add.png</file>
+        <file>delete.png</file>
+        <file>pdf.png</file>
+    </qresource>
+</RCC>
