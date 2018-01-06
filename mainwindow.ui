@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1057</width>
-    <height>629</height>
+    <width>1018</width>
+    <height>687</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,7 +24,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="icon">
@@ -120,7 +120,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="buyer_bame"/>
+           <widget class="QLineEdit" name="buyer_name"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_18">
@@ -164,20 +164,20 @@
        <attribute name="title">
         <string>Faktura</string>
        </attribute>
-       <layout class="QFormLayout" name="formLayout">
+       <layout class="QFormLayout" name="formLayout_4">
         <item row="0" column="0" colspan="2">
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>Data sprzedaży</string>
-            </property>
-           </widget>
-          </item>
+         <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
            <widget class="QLabel" name="label_7">
             <property name="text">
              <string>Numer faktury</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="invoice_nr">
+            <property name="placeholderText">
+             <string>%yyyy%/%MM%/%NR%</string>
             </property>
            </widget>
           </item>
@@ -188,9 +188,6 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="invoice_nr"/>
-          </item>
           <item row="1" column="1">
            <widget class="QDateEdit" name="invoice_issued">
             <property name="calendarPopup">
@@ -198,17 +195,10 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QDateEdit" name="invoice_term">
-            <property name="calendarPopup">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_11">
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_9">
             <property name="text">
-             <string>Typ płatności</string>
+             <string>Data sprzedaży</string>
             </property>
            </widget>
           </item>
@@ -226,6 +216,20 @@
             </property>
            </widget>
           </item>
+          <item row="3" column="1">
+           <widget class="QDateEdit" name="invoice_term">
+            <property name="calendarPopup">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>Typ płatności</string>
+            </property>
+           </widget>
+          </item>
           <item row="4" column="1">
            <widget class="QLineEdit" name="invoice_paymenttype">
             <property name="text">
@@ -233,7 +237,75 @@
             </property>
            </widget>
           </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Nagłówek faktury</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QTextEdit" name="invoice_header">
+            <property name="html">
+             <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;div float = left&amp;gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;img align=right float=none src=%LOGO%&amp;gt;&amp;lt;br&amp;gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;b&amp;gt;Faktura numer: &amp;lt;/b&amp;gt; %NRFAKTURY%&amp;lt;br&amp;gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;br&amp;gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;b&amp;gt;Data wystawienia: &amp;lt;/b&amp;gt; %DATAWYSTAWIENIA%&amp;lt;br&amp;gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;b&amp;gt;Data sprzedaży: &amp;lt;/b&amp;gt; %DATASPRZEDAZY%&amp;lt;br&amp;gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;b&amp;gt;Termin płatności: &amp;lt;/b&amp;gt; %TERMINPLATNOSCI%&amp;lt;br&amp;gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;b&amp;gt;Płatność: &amp;lt;/b&amp;gt; %TYPPLATNOSCI%&amp;lt;br&amp;gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;/div&amp;gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;lt;hr&amp;gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="placeholderText">
+             <string>&lt;div float = left&gt; &lt;img align=right float=none src=logo.jpg&gt;&lt;br&gt; &lt;b&gt;Faktura numer: &lt;/b&gt; %NRFAKTURY%&lt;br&gt; &lt;br&gt; &lt;b&gt;Data wystawienia: &lt;/b&gt; %DATAWYSTAWIENIA%&lt;br&gt; &lt;b&gt;Data sprzedaży: &lt;/b&gt; %DATASPRZEDAZY%&lt;br&gt; &lt;b&gt;Termin płatności: &lt;/b&gt; %TERMINPLATNOSCI%&lt;br&gt; &lt;b&gt;Płatność: &lt;/b&gt; %TYPPLATNOSCI%&lt;br&gt; &lt;/div&gt; &lt;hr&gt; </string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>Środek faktury</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QTextEdit" name="invoice_body"/>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>Stopka faktury</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QTextEdit" name="invoice_footer"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QPushButton" name="invoice_logoChooser">
+            <property name="text">
+             <string>Wybierz logo</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="invoice_logoPath"/>
+          </item>
          </layout>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="invoice_resetToDefaults">
+          <property name="text">
+           <string>Resetuj do domyślnych</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -350,20 +422,17 @@
         <string>Generowanie/wysyłanie</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_6">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_21">
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_27">
           <property name="text">
-           <string>Nazwa pliku</string>
+           <string>Tytuł</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="generator_filename"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="generator_sendemail">
-          <property name="text">
-           <string>Wyślij na e-mail</string>
+         <widget class="QLineEdit" name="generator_filename">
+          <property name="placeholderText">
+           <string>%NRFAKTURY%.pdf</string>
           </property>
          </widget>
         </item>
@@ -374,15 +443,22 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_27">
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="generator_sendemail">
           <property name="text">
-           <string>Tytuł</string>
+           <string>Wyślij na e-mail</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
-         <widget class="QLineEdit" name="generator_emailtitle">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_21">
+          <property name="text">
+           <string>Nazwa pliku</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QTextEdit" name="generator_emailcontent">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -395,14 +471,14 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
-         <widget class="QTextEdit" name="generator_emailcontent">
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="generator_emailtitle">
           <property name="enabled">
            <bool>false</bool>
           </property>
          </widget>
         </item>
-        <item row="4" column="0" colspan="2">
+        <item row="5" column="1">
          <widget class="QPushButton" name="generator_generate">
           <property name="text">
            <string>Generate</string>
@@ -410,6 +486,23 @@
           <property name="icon">
            <iconset resource="res/resources.qrc">
             <normaloff>:/pdf.png</normaloff>:/pdf.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QPushButton" name="pushButton">
+          <property name="text">
+           <string>Podgląd</string>
+          </property>
+          <property name="icon">
+           <iconset resource="res/resources.qrc">
+            <normaloff>:/eye.png</normaloff>:/eye.png</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -491,7 +584,7 @@
            </widget>
           </item>
           <item row="6" column="1">
-           <widget class="QLineEdit" name="lineEdit"/>
+           <widget class="QLineEdit" name="settings_smtpuser"/>
           </item>
           <item row="7" column="0">
            <widget class="QLabel" name="label_26">
@@ -501,15 +594,25 @@
            </widget>
           </item>
           <item row="7" column="1">
-           <widget class="QLineEdit" name="lineEdit_2">
+           <widget class="QLineEdit" name="settings_smtppassword">
             <property name="inputMask">
              <string/>
+            </property>
+            <property name="echoMode">
+             <enum>QLineEdit::Password</enum>
             </property>
             <property name="placeholderText">
              <string/>
             </property>
             <property name="clearButtonEnabled">
              <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QCheckBox" name="settings_autosave">
+            <property name="text">
+             <string>Auto-save</string>
             </property>
            </widget>
           </item>
@@ -529,6 +632,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionGenerowanie"/>
+   <addaction name="actionPodgl_d"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionGenerowanie">
@@ -546,6 +650,21 @@
     <string>Ctrl+S</string>
    </property>
   </action>
+  <action name="actionPodgl_d">
+   <property name="icon">
+    <iconset resource="res/resources.qrc">
+     <normaloff>:/eye.png</normaloff>:/eye.png</iconset>
+   </property>
+   <property name="text">
+    <string>Podgląd</string>
+   </property>
+   <property name="toolTip">
+    <string>Podgląd faktury</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
@@ -560,7 +679,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>248</x>
-     <y>578</y>
+     <y>636</y>
     </hint>
     <hint type="destinationlabel">
      <x>243</x>
@@ -575,8 +694,8 @@
    <slot>removeRowFromTable()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>361</x>
-     <y>578</y>
+     <x>352</x>
+     <y>636</y>
     </hint>
     <hint type="destinationlabel">
      <x>370</x>
@@ -591,8 +710,8 @@
    <slot>togglePKWIUColumn(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>562</x>
-     <y>574</y>
+     <x>542</x>
+     <y>632</y>
     </hint>
     <hint type="destinationlabel">
      <x>567</x>
@@ -607,8 +726,8 @@
    <slot>toggleDiscountsColumn(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>823</x>
-     <y>571</y>
+     <x>794</x>
+     <y>629</y>
     </hint>
     <hint type="destinationlabel">
      <x>818</x>
@@ -664,11 +783,45 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>generator_generate</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onGenerateButton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>536</x>
+     <y>616</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>509</x>
+     <y>605</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onViewButton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>60</x>
+     <y>628</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>338</x>
+     <y>660</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>addRowToTable()</slot>
   <slot>removeRowFromTable()</slot>
   <slot>togglePKWIUColumn(bool)</slot>
   <slot>toggleDiscountsColumn(bool)</slot>
+  <slot>onGenerateButton()</slot>
+  <slot>onViewButton()</slot>
  </slots>
 </ui>
