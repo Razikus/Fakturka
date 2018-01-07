@@ -123,7 +123,6 @@ void MainWindow::writeApplicationSettings()
 void MainWindow::loadSettings()
 {
     QSettings settings("ApproxTeam", "Fakturka");
-    qDebug() << settings.fileName();
 
     loadWindowSettings();
     loadSellerSettings();
@@ -229,7 +228,6 @@ void MainWindow::generateInvoicePDFToFile(QString fileName)
     printer.setPageMargins(QMarginsF(10, 10, 10, 10));
 
     document.print(&printer);
-    qDebug() << document.toHtml();
 
 
 }
@@ -352,8 +350,6 @@ void MainWindow::onGenerateButton()
 {
     QString invoiceNr = getFormattedInvoiceNr();
     QString fileName = getFormattedFileName(invoiceNr);
-    qDebug() << invoiceNr;
-    qDebug() << fileName;
     generateInvoicePDFToFile(fileName);
     incrementInvoiceNumberInSettings();
 }
