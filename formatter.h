@@ -17,6 +17,9 @@ public:
 
     Formatter* format(QString tag, QString format);
     Formatter* format(QString tag, int format);
+    Formatter* format(QString tag, double format);
+
+    bool contains(QString key);
 
     QString toString();
 

@@ -6,6 +6,8 @@
 
 QT       += core gui
 QT += printsupport
+QT += webenginewidgets webengine
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -28,15 +30,21 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     settingsmanager.cpp \
-    formatter.cpp
+    formatter.cpp \
+    invoicestockcreator.cpp \
+    htmltablecreator.cpp
 
 HEADERS += \
         mainwindow.h \
     settingsmanager.h \
-    formatter.h
+    formatter.h \
+    invoicestockcreator.h \
+    htmltablecreator.h
 
 FORMS += \
         mainwindow.ui
 
 RESOURCES += \
     res/resources.qrc
+
+

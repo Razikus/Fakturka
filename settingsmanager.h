@@ -14,6 +14,7 @@ public:
     QString getSettingString(QString group, const QString &setting, const QVariant &def = QString());
     bool getSettingBool(QString group, const QString &setting, const QVariant &def = QString());
     int getSettingInt(QString group, const QString &setting, const QVariant &def = QString());
+    double getSettingDouble(QString group, const QString &setting, const QVariant &def = QString());
 
     void setSetting(QString group, const QString &setting, const QVariant &value);
 

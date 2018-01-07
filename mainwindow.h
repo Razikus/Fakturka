@@ -1,16 +1,23 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "invoicestockcreator.h"
 #include "settingsmanager.h"
 
 #include <QSettings>
 #include <QtWidgets>
 #include <QMainWindow>
 #include <QPrinter>
+#include <QGuiApplication>
+#include <QPrinter>
+#include <QtWebEngineWidgets/QtWebEngineWidgets>
+#include <QtWebEngine/QtWebEngine>
 
 namespace Ui {
 class MainWindow;
 }
+
+
 
 class MainWindow : public QMainWindow
 {
@@ -39,6 +46,7 @@ public:
 
     Ui::MainWindow *getUi();
 
+
 public slots:
     void addRowToTable();
     void removeRowFromTable();
@@ -46,23 +54,29 @@ public slots:
     void toggleDiscountsColumn(bool value);
     void onGenerateButton();
     void onViewButton();
-
 private slots:
-    void on_actionGenerowanie_triggered();
-
-
-    void on_actionPodgl_d_triggered();
-
     void on_invoice_logoChooser_clicked();
 
     void on_invoice_resetToDefaults_clicked();
+
+    void on_table_cellChanged(int row, int column);
+
+    void on_actionCalculate_triggered();
+
+    void on_actionGenerate_triggered();
+
+    void on_actionView_triggered();
+
+    void on_actionAddCargo_triggered();
 
 private:
     Ui::MainWindow *ui;
     bool pkwiuChecked = false;
     bool discountsChecked = false;
+
     SettingsManager settingsManager;
 
+    void printToPDF(QString html, QString fileName, QPageLayout layout);
 
     void writeWindowSettings();
     void writeSellerSettings();
@@ -99,9 +113,24 @@ private:
     QString defaultBody;
     QString defaultFooter;
 
+    InvoiceStockCreator invoiceStockCreator;
+
     QString getFormattedDocHTML();
 
     QString formatStringWithAvalaibleTags(QString);
+
+    void calculateBruttoForRow(int row);
+
+    void calculateDiscountsForRow(int row);
+
+    double getSumOfNetto();
+    double getSumOfVat();
+    double getSumOfBrutto();
+    double getSumOfNettoAfterDiscounts();
+
+    double getSumOfColumn(int column);
+
+
 };
 
 template<typename QEnum>

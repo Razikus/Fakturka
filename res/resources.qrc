@@ -11,5 +11,6 @@
         <file>delete.png</file>
         <file>pdf.png</file>
         <file>eye.png</file>
+        <file>calculator.png</file>
     </qresource>
 </RCC>

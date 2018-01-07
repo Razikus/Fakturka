@@ -2,22 +2,31 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QIODevice>
+
 
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    invoiceStockCreator()
 {
     this->settingsManager = SettingsManager();
+    ui = new Ui::MainWindow;
     ui->setupUi(this);
+
 
     this->defaultHeader = ui->invoice_header->toPlainText();
     this->defaultBody = ui->invoice_body->toPlainText();
     this->defaultFooter = ui->invoice_footer->toPlainText();
 
+
     this->setDatesToToday();
     this->setInvoiceNumberToCorresponding();
     this->loadSettings();
+    this->invoiceStockCreator.setContext(this->ui->table);
+
+
 }
 
 MainWindow::~MainWindow()
@@ -82,6 +91,16 @@ void MainWindow::writeInvoiceSettings()
     settingsManager.setSetting(settingName, "body", ui->invoice_body->toPlainText());
     settingsManager.setSetting(settingName, "footer", ui->invoice_footer->toPlainText());
     settingsManager.setSetting(settingName, "logoPath", ui->invoice_logoPath->text());
+    settingsManager.setSetting(settingName, "margup", ui->invoice_margup->value());
+    settingsManager.setSetting(settingName, "margdown", ui->invoice_margdown->value());
+    settingsManager.setSetting(settingName, "margright", ui->invoice_margright->value());
+    settingsManager.setSetting(settingName, "margleft", ui->invoice_margleft->value());
+
+    QString format = "A4";
+    if(ui->invoice_a5format->isChecked()) {
+        format = "A5";
+    }
+    settingsManager.setSetting(settingName, "format", format);
 
 }
 
@@ -90,6 +109,7 @@ void MainWindow::writeTableSettings()
     QString settingName = QtEnumToString(AppArea::TABLE);
     settingsManager.setSetting(settingName, "pkwiu", ui->table_pkwiu->isChecked());
     settingsManager.setSetting(settingName, "discount", ui->table_discount->isChecked());
+    settingsManager.setSetting(settingName, "autoCalculate", ui->table_autoCalculate->isChecked());
 
 }
 
@@ -168,6 +188,17 @@ void MainWindow::loadInvoiceSettings()
     ui->invoice_body->setPlainText(settingsManager.getSettingString(settingName, "body"));
     ui->invoice_footer->setPlainText(settingsManager.getSettingString(settingName, "footer"));
     ui->invoice_logoPath->setText(settingsManager.getSettingString(settingName, "logoPath"));
+    ui->invoice_margup->setValue(settingsManager.getSettingDouble(settingName, "margup"));
+    ui->invoice_margdown->setValue(settingsManager.getSettingDouble(settingName, "margdown"));
+    ui->invoice_margright->setValue(settingsManager.getSettingDouble(settingName, "margright"));
+    ui->invoice_margleft->setValue(settingsManager.getSettingDouble(settingName, "margleft"));
+
+    QString format = settingsManager.getSettingString(settingName, "format");
+    if(format == "A5") {
+        ui->invoice_a5format->setChecked(true);
+    } else {
+        ui->invoice_a4format->setChecked(true);
+    }
 }
 
 
@@ -177,6 +208,7 @@ void MainWindow::loadTableSettings()
     QString settingName = QtEnumToString(AppArea::TABLE);
     ui->table_pkwiu->setChecked(settingsManager.getSettingBool(settingName, "pkwiu", QVariant(false)));
     ui->table_discount->setChecked(settingsManager.getSettingBool(settingName, "discount", QVariant(false)));
+    ui->table_autoCalculate->setChecked(settingsManager.getSettingBool(settingName, "autoCalculate", QVariant(false)));
 
 }
 
@@ -217,19 +249,38 @@ void MainWindow::incrementInvoiceNumberInSettings()
 void MainWindow::generateInvoicePDFToFile(QString fileName)
 {
     QString html = getFormattedDocHTML();
+    double left = ui->invoice_margleft->value();
+    double right = ui->invoice_margright->value();
+    double bottom = ui->invoice_margdown->value();
+    double top = ui->invoice_margup->value();
+    QPageSize::PageSizeId pagesize = QPageSize::A4;
+    if(ui->invoice_a5format->isChecked()) {
+        pagesize = QPageSize::A5;
+    }
+    QPageLayout layout = QPageLayout(QPageSize(pagesize), QPageLayout::Orientation::Portrait, QMarginsF(left, top, right, bottom));
+    this->printToPDF(html, fileName, layout);
+}
 
-    QTextDocument document;
-    document.setHtml(html);
-
-    QPrinter printer(QPrinter::PrinterResolution);
-    printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setPaperSize(QPrinter::A4);
-    printer.setOutputFileName(fileName);
-    printer.setPageMargins(QMarginsF(10, 10, 10, 10));
-
-    document.print(&printer);
-
-
+void MainWindow::printToPDF(QString html, QString fileName, QPageLayout layout)
+{
+    QtWebEngine::initialize();
+    QWebEnginePage page;
+    QEventLoop loop;
+    loop.connect(&page, &QWebEnginePage::loadFinished, [&page, &loop, &fileName, &layout]() {
+        page.printToPdf([&loop, &fileName] (QByteArray ba) {
+            QFile f(fileName);
+            if (f.open(QIODevice::WriteOnly))
+            {
+                f.write(ba);
+                f.close();
+            } else {
+                qDebug() << "Error opening file for writing" << fileName << f.errorString();
+            }
+            loop.exit();
+        }, layout );
+    });
+    page.setHtml(html, QUrl("file://"));
+    loop.exec();
 }
 
 void MainWindow::removeTempFiles()
@@ -250,10 +301,7 @@ QString MainWindow::getFormattedInvoiceNr()
     QString settingName = QtEnumToString(AppArea::INVOICE);
     int currentMonthInvoiceNr = settingsManager.getSettingInt(settingName + "/NUMBER", getCurrentNameOfInvoiceNumber(), 1);
     QString currentFormat = ui->invoice_nr->text();
-    QString currentYear = QDate::currentDate().toString("yyyy");
-    QString currentMonth = QDate::currentDate().toString("MM");
-    Formatter* formatter = new Formatter(currentFormat);
-    return formatter->format("%yyyy%", currentYear)->format("%MM%", currentMonth)->format("%NR%", currentMonthInvoiceNr)->toString();
+    return formatStringWithAvalaibleTags(currentFormat);
 
 }
 
@@ -292,16 +340,48 @@ QString MainWindow::getFormattedDocHTML()
 QString MainWindow::formatStringWithAvalaibleTags(QString value)
 {
     Formatter* formatter = new Formatter(value);
-    formatter->format("%NRFAKTURY%", getFormattedInvoiceNr());
-    formatter->format("%LOGO%", ui->invoice_logoPath->text());
-    formatter->format("%DATAWYSTAWIENIA%", ui->invoice_issued->text());
-    formatter->format("%DATASPRZEDAZY%", ui->invoice_selldate->text());
-    formatter->format("%TERMINPLATNOSCI%", ui->invoice_term->text());
-    formatter->format("%TYPPLATNOSCI%", ui->invoice_paymenttype->text());
 
+    QString currentYear = QDate::currentDate().toString("yyyy");
+    QString currentMonth = QDate::currentDate().toString("MM");
+    QString currentDay = QDate::currentDate().toString("DD");
+
+
+    formatter->format("%yyyy%", currentYear);
+    formatter->format("%MM%", currentMonth);
+    formatter->format("%dd%", currentDay);
+    QString settingName = QtEnumToString(AppArea::INVOICE);
+    int currentMonthInvoiceNr = settingsManager.getSettingInt(settingName + "/NUMBER", getCurrentNameOfInvoiceNumber(), 1);
+    formatter->format("%NR%", currentMonthInvoiceNr);
+
+    if(formatter->contains("%")) {
+        formatter->format("%NRFAKTURY%", getFormattedInvoiceNr());
+        formatter->format("%LOGO%", ui->invoice_logoPath->text());
+        formatter->format("%DATAWYSTAWIENIA%", ui->invoice_issued->text());
+        formatter->format("%DATASPRZEDAZY%", ui->invoice_selldate->text());
+        formatter->format("%TERMINPLATNOSCI%", ui->invoice_term->text());
+        formatter->format("%TYPPLATNOSCI%", ui->invoice_paymenttype->text());
+
+        formatter->format("%SPRZEDAJACYNAZWA%", ui->seller_name->text());
+        formatter->format("%SPRZEDAJACYULICA%", ui->seller_street->text());
+        formatter->format("%SPRZEDAJACYKODPOCZTOWYMIASTO%", ui->seller_city->text());
+        formatter->format("%SPRZEDAJACYNIP%", ui->seller_nip->text());
+        formatter->format("%SPRZEDAJACYBANK%", ui->seller_bank->text());
+        formatter->format("%SPRZEDAJACYKONTO%", ui->seller_account->text());
+
+        formatter->format("%KUPUJACYNAZWA%", ui->buyer_name->text());
+        formatter->format("%KUPUJACYULICA%", ui->buyer_street->text());
+        formatter->format("%KUPUJACYKODPOCZTOWYMIATO%", ui->buyer_city->text());
+        formatter->format("%KUPUJACYNIP%", ui->buyer_nip->text());
+
+        formatter->format("%TOWARWARTOSCNETTO%", getSumOfNetto());
+        formatter->format("%TOWARWARTOSCVAT%", getSumOfVat());
+        formatter->format("%TOWARWARTOSCBRUTTO%", getSumOfBrutto());
+        formatter->format("%TOWARWARTOSCNETTOPORABACIE%", getSumOfNettoAfterDiscounts());
+
+        formatter->format("%TOWAR%", this->invoiceStockCreator.createHTMLTag());
+    }
     return formatter->toString();
 }
-
 
 
 void MainWindow::addRowToTable()
@@ -334,22 +414,29 @@ void MainWindow::togglePKWIUColumn(bool value)
 void MainWindow::toggleDiscountsColumn(bool value)
 {
     int myIndex = 1;
+    int afterDiscounts = 5;
     if(this->ui->table_pkwiu->isChecked()) {
         myIndex = 2;
+        afterDiscounts = 6;
     }
     if(value) {
         this->ui->table->insertColumn(myIndex);
-        this->ui->table->setHorizontalHeaderItem(myIndex, new QTableWidgetItem("Rabat"));
+        this->ui->table->setHorizontalHeaderItem(myIndex, new QTableWidgetItem("Rabat %"));
+        this->ui->table->insertColumn(afterDiscounts);
+        this->ui->table->setHorizontalHeaderItem(afterDiscounts, new QTableWidgetItem("Cena netto po rabacie"));
+        this->ui->table->setColumnWidth(afterDiscounts, 200);
     } else {
         this->ui->table->removeColumn(myIndex);
+        this->ui->table->removeColumn(afterDiscounts - 1);
     }
+
+    on_actionCalculate_triggered();
 
 }
 
 void MainWindow::onGenerateButton()
 {
-    QString invoiceNr = getFormattedInvoiceNr();
-    QString fileName = getFormattedFileName(invoiceNr);
+    QString fileName = formatStringWithAvalaibleTags(ui->generator_filename->text());
     generateInvoicePDFToFile(fileName);
     incrementInvoiceNumberInSettings();
 }
@@ -363,15 +450,11 @@ void MainWindow::onViewButton()
 
 }
 
-void MainWindow::on_actionGenerowanie_triggered()
+void MainWindow::on_actionGenerate_triggered()
 {
     writeSettings();
 }
 
-void MainWindow::on_actionPodgl_d_triggered()
-{
-    onViewButton();
-}
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
@@ -384,6 +467,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_invoice_logoChooser_clicked()
 {
+    this->invoiceStockCreator.createHTMLTag();
     ui->invoice_logoPath->setText(QFileDialog::getOpenFileName(this, tr("Otwórz logo"), ".", tr("Obrazki (*.png *.jpg *.jpeg *.bmp")));
 }
 
@@ -398,3 +482,197 @@ Ui::MainWindow *MainWindow::getUi()
 {
     return ui;
 }
+
+
+void MainWindow::on_table_cellChanged(int row, int column)
+{
+    int nettoColumn = this->ui->table->columnCount() - 4;
+    int vatColumn = this->ui->table->columnCount() - 3;
+    int afterDiscountsColumn = 5;
+    int discountsColumn = 1;
+    if(this->ui->table_pkwiu->isChecked()) {
+        discountsColumn = 2;
+        afterDiscountsColumn = 6;
+    }
+
+    if(this->ui->table_discount->isChecked()) {
+        nettoColumn = nettoColumn - 1;
+    }
+
+    if(ui->table_discount->isChecked() && ui->table_autoCalculate->isChecked() && (column == discountsColumn || column == nettoColumn)) {
+
+        calculateDiscountsForRow(row);
+        calculateBruttoForRow(row);
+    }
+    if(ui->table_autoCalculate->isChecked() && (column == nettoColumn || column == vatColumn)) {
+        calculateBruttoForRow(row);
+    }
+
+}
+
+
+void MainWindow::calculateBruttoForRow(int row)
+{
+    int nettoColumn = this->ui->table->columnCount() - 4;
+    int vatColumn = this->ui->table->columnCount() - 3;
+    int vatAfterColumn = this->ui->table->columnCount() - 2;
+    int bruttoAfterColumn = this->ui->table->columnCount() - 1;
+
+
+
+    if(this->ui->table->item(row, nettoColumn) != nullptr && this->ui->table->item(row, vatColumn) != nullptr) {
+        bool conversion;
+        double netto = this->ui->table->item(row, nettoColumn)->text().replace(",", ".").toDouble(&conversion);
+        if(!conversion) {
+            return;
+        }
+        QString vatString = this->ui->table->item(row, vatColumn)->text();
+        vatString = vatString.replace(",", ".");
+        double vat = vatString.toDouble(&conversion);
+        if(!conversion && vatString.contains("%")) {
+            vatString = vatString.replace("%", "");
+            vat = vatString.toDouble(&conversion);
+            if(!conversion) {
+                return;
+            }
+        }
+
+        vat = vat / 100.0;
+
+        double vatAfter = netto * vat;
+        double bruttoAfter = netto + vatAfter;
+
+        this->ui->table->setItem(row, vatAfterColumn, new QTableWidgetItem(QString::number(vatAfter, 'f', 2)));
+        this->ui->table->setItem(row, bruttoAfterColumn, new QTableWidgetItem(QString::number(bruttoAfter, 'f', 2)));
+    }
+
+
+}
+
+void MainWindow::calculateDiscountsForRow(int row)
+{
+    int nettoColumn = this->ui->table->columnCount() - 4;
+    int afterDiscountsColumn = 5;
+    int discountsColumn = 1;
+    if(this->ui->table_pkwiu->isChecked()) {
+        discountsColumn = 2;
+        afterDiscountsColumn = 6;
+    }
+
+
+    if(this->ui->table_discount->isChecked()) {
+        nettoColumn = nettoColumn - 1;
+    }
+
+    if(this->ui->table->item(row, nettoColumn) != nullptr && this->ui->table->item(row, discountsColumn) != nullptr) {
+        bool conversion;
+        double netto = this->ui->table->item(row, nettoColumn)->text().replace(",", ".").toDouble(&conversion);
+        if(!conversion) {
+            return;
+        }
+        QString discountsString = this->ui->table->item(row, discountsColumn)->text();
+        discountsString = discountsString.replace(",", ".");
+        double discounts = discountsString.toDouble(&conversion);
+        if(!conversion && discountsString.contains("%")) {
+            discountsString = discountsString.replace("%", "");
+            discounts = discountsString.toDouble(&conversion);
+            if(!conversion) {
+                return;
+            }
+        }
+
+        discounts = discounts / 100.0;
+
+        double discountsAfter = netto * discounts;
+        discountsAfter = netto - discountsAfter;
+
+        this->ui->table->setItem(row, afterDiscountsColumn, new QTableWidgetItem(QString::number(discountsAfter, 'f', 2)));
+    }
+
+
+
+}
+
+double MainWindow::getSumOfNetto()
+{
+
+    int nettoColumn = this->ui->table->columnCount() - 4;
+    if(this->ui->table_discount->isChecked()) {
+        nettoColumn--;
+    }
+
+    return getSumOfColumn(nettoColumn);
+}
+
+double MainWindow::getSumOfNettoAfterDiscounts()
+{
+    int afterDiscountsColumn = 5;
+    if(this->ui->table_pkwiu->isChecked()) {
+        afterDiscountsColumn = 6;
+    }
+
+    return getSumOfColumn(afterDiscountsColumn);
+
+}
+
+double MainWindow::getSumOfVat()
+{
+    int vatAfterColumn = this->ui->table->columnCount() - 2;
+
+    return getSumOfColumn(vatAfterColumn);
+
+}
+
+double MainWindow::getSumOfBrutto()
+{
+    int bruttoAfterColumn = this->ui->table->columnCount() - 1;
+    return getSumOfColumn(bruttoAfterColumn);
+
+}
+
+double MainWindow::getSumOfColumn(int columnToSum)
+{
+    int rows = this->ui->table->rowCount();
+
+    double sum = 0.0;
+
+    for(int row = 0; row < rows; row++) {
+
+        if(this->ui->table->item(row, columnToSum) != nullptr) {
+            bool conversion;
+            QString itemString = this->ui->table->item(row, columnToSum)->text().replace(",", ".").replace("%", "");
+            sum = sum + itemString.toDouble(&conversion);
+
+            if(!conversion) {
+                this->ui->table->item(row, columnToSum)->setTextColor(QColor("red"));
+            }
+        }
+    }
+
+    return sum;
+
+}
+
+
+void MainWindow::on_actionCalculate_triggered()
+{
+    int rows = this->ui->table->rowCount();
+
+    for(int row = 0; row < rows; row++) {
+        calculateDiscountsForRow(row);
+        calculateBruttoForRow(row);
+    }
+}
+
+void MainWindow::on_actionAddCargo_triggered()
+{
+    this->ui->table->insertRow(this->ui->table->rowCount());
+}
+
+
+void MainWindow::on_actionView_triggered()
+{
+    onViewButton();
+}
+
+
