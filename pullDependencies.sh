@@ -10,5 +10,6 @@ else
 	git clone https://github.com/bluetiger9/SmtpClient-for-Qt.git $smtpClient
 fi
 
-echo $DIR
+rm -rf $DIR/src/libs
+cp -r $LIBS $DIR/src/
 

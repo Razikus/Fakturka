@@ -677,6 +677,7 @@ double MainWindow::getSumOfColumn(int columnToSum)
 
 bool MainWindow::conditionallySendMailWithInvoice(QString fileName)
 {
+    qDebug() << QSslSocket::sslLibraryBuildVersionString();
     if(!this->ui->generator_sendemail->isChecked()) {
         return false;
     }
@@ -726,7 +727,7 @@ bool MainWindow::conditionallySendMailWithInvoice(QString fileName)
         }
 
         if (!smtp.login()) {
-            showError("O nie!", "Nie można połączyć się zalogować: " + login);
+            showError("O nie!", "Nie można się zalogować: " + login);
             smtp.quit();
             return false;
         }

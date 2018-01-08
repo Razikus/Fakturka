@@ -3,7 +3,7 @@
 
 #include "invoicestockcreator.h"
 #include "settingsmanager.h"
-#include "SmtpClient/src/SmtpMime"
+#include "libs/smtpclient/src/SmtpMime"
 
 #include <QSettings>
 #include <QtWidgets>

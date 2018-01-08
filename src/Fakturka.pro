@@ -7,6 +7,7 @@
 QT       += core gui
 QT += printsupport
 QT += webenginewidgets webengine
+QT += network
 
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -25,7 +26,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-
+PKGCONFIG += openssl
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
@@ -47,13 +48,11 @@ FORMS += \
 RESOURCES += \
     res/resources.qrc
 
-SMTP_LIBRARY_LOCATION = /home/edge/build-SMTPEmail-Desktop_Qt_5_10_0_GCC_64bit-Release
-
-win32:CONFIG(release, debug|release): LIBS += -L$$SMTP_LIBRARY_LOCATION/release/ -lSMTPEmail
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$SMTP_LIBRARY_LOCATION/debug/ -lSMTPEmail
-else:unix: LIBS += -L$$SMTP_LIBRARY_LOCATION -lSMTPEmail
-
-INCLUDEPATH += $$SMTP_LIBRARY_LOCATION
-DEPENDPATH += $$SMTP_LIBRARY_LOCATION
 
 
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/libs/smtpclient_build/release/ -lSMTPEmail
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libs/smtpclient_build/debug/ -lSMTPEmail
+else:unix: LIBS += -L$$PWD/libs/smtpclient_build/ -lSMTPEmail
+
+INCLUDEPATH += $$PWD/libs/smtpclient_build/release
+DEPENDPATH += $$PWD/libs/smtpclient_build/release
