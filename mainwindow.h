@@ -69,6 +69,10 @@ private slots:
 
     void on_actionAddCargo_triggered();
 
+    void on_generator_chooseFile_clicked();
+
+    void on_actionhelp_triggered();
+
 private:
     Ui::MainWindow *ui;
     bool pkwiuChecked = false;

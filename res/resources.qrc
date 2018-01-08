@@ -12,5 +12,6 @@
         <file>pdf.png</file>
         <file>eye.png</file>
         <file>calculator.png</file>
+        <file>question.png</file>
     </qresource>
 </RCC>

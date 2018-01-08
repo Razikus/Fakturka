@@ -467,7 +467,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_invoice_logoChooser_clicked()
 {
-    this->invoiceStockCreator.createHTMLTag();
     ui->invoice_logoPath->setText(QFileDialog::getOpenFileName(this, tr("Otwórz logo"), ".", tr("Obrazki (*.png *.jpg *.jpeg *.bmp")));
 }
 
@@ -676,3 +675,41 @@ void MainWindow::on_actionView_triggered()
 }
 
 
+
+void MainWindow::on_generator_chooseFile_clicked()
+{
+    ui->generator_filename->setText(QFileDialog::getSaveFileName(this, tr("Gdzie zapisać?"), "."));
+
+}
+
+void MainWindow::on_actionhelp_triggered()
+{
+    QMessageBox* dialog = new QMessageBox(this);
+    const char* str = "%yyyy% - text \n"
+                      "%MM% - text \n"
+                      "%dd% - text \n"
+                      "%NR% - text \n"
+                      "%NRFAKTURY% - text \n"
+                      "%LOGO% - text \n"
+                      "%DATAWYSTAWIENIA% - text \n"
+                      "%DATASPRZEDAZY% - text \n"
+                      "%TERMINPLATNOSCI% - text \n"
+                      "%TYPPLATNOSCI% - text \n"
+                      "%SPRZEDAJACYNAZWA% - text \n"
+                      "%SPRZEDAJACYULICA% - text \n"
+                      "%SPRZEDAJACYKODPOCZTOWYMIASTO% - text \n"
+                      "%SPRZEDAJACYNIP% - text \n"
+                      "%SPRZEDAJACYBANK% - text \n"
+                      "%SPRZEDAJACYKONTO% - text \n"
+                      "%KUPUJACYNAZWA% - text \n"
+                      "%KUPUJACYULICA% - text \n"
+                      "%KUPUJACYKODPOCZTOWYMIATO% - text \n"
+                      "%KUPUJACYNIP% - text \n"
+                      "%TOWARWARTOSCNETTO% - text \n"
+                      "%TOWARWARTOSCVAT% - text \n"
+                      "%TOWARWARTOSCBRUTTO% - text \n"
+                      "%TOWARWARTOSCNETTOPORABACIE% - text \n"
+                      "%TOWAR% - text \n";
+    dialog->setText("Dostępne tagi:\n" + QString::fromUtf8(str));
+    dialog->exec();
+}
