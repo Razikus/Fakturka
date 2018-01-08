@@ -153,6 +153,19 @@ void MainWindow::loadSettings()
     loadApplicationSettings();
 }
 
+void MainWindow::showError(QString title, QString text)
+{
+    QMessageBox messageBox;
+    messageBox.critical(this, title, text);
+}
+
+void MainWindow::showInformation(QString title, QString text)
+{
+
+    QMessageBox messageBox;
+    messageBox.information(this, title, text);
+}
+
 void MainWindow::loadWindowSettings()
 {
     resize(settingsManager.getSetting("Window", "size", QSize(1024, 780)).toSize());
@@ -246,7 +259,7 @@ void MainWindow::incrementInvoiceNumberInSettings()
 
 }
 
-void MainWindow::generateInvoicePDFToFile(QString fileName)
+bool MainWindow::generateInvoicePDFToFile(QString fileName)
 {
     QString html = getFormattedDocHTML();
     double left = ui->invoice_margleft->value();
@@ -258,22 +271,25 @@ void MainWindow::generateInvoicePDFToFile(QString fileName)
         pagesize = QPageSize::A5;
     }
     QPageLayout layout = QPageLayout(QPageSize(pagesize), QPageLayout::Orientation::Portrait, QMarginsF(left, top, right, bottom));
-    this->printToPDF(html, fileName, layout);
+    return this->printToPDF(html, fileName, layout);
 }
 
-void MainWindow::printToPDF(QString html, QString fileName, QPageLayout layout)
+bool MainWindow::printToPDF(QString html, QString fileName, QPageLayout layout)
 {
     QtWebEngine::initialize();
     QWebEnginePage page;
     QEventLoop loop;
-    loop.connect(&page, &QWebEnginePage::loadFinished, [&page, &loop, &fileName, &layout]() {
-        page.printToPdf([&loop, &fileName] (QByteArray ba) {
+    bool ret = true;
+    loop.connect(&page, &QWebEnginePage::loadFinished, [&page, &loop, &fileName, &layout, &ret]() {
+        page.printToPdf([&loop, &fileName, &ret] (QByteArray ba) {
             QFile f(fileName);
             if (f.open(QIODevice::WriteOnly))
             {
                 f.write(ba);
                 f.close();
             } else {
+                ret = false;
+
                 qDebug() << "Error opening file for writing" << fileName << f.errorString();
             }
             loop.exit();
@@ -281,6 +297,10 @@ void MainWindow::printToPDF(QString html, QString fileName, QPageLayout layout)
     });
     page.setHtml(html, QUrl("file://"));
     loop.exec();
+    if(!ret) {
+        showError("O nie!", "Nie można otworzyć pliku do zapisu: " + fileName);
+    }
+    return ret;
 }
 
 void MainWindow::removeTempFiles()
@@ -437,8 +457,11 @@ void MainWindow::toggleDiscountsColumn(bool value)
 void MainWindow::onGenerateButton()
 {
     QString fileName = formatStringWithAvalaibleTags(ui->generator_filename->text());
-    generateInvoicePDFToFile(fileName);
-    incrementInvoiceNumberInSettings();
+    bool generated = generateInvoicePDFToFile(fileName);
+    if(generated) {
+        conditionallySendMailWithInvoice(fileName);
+        incrementInvoiceNumberInSettings();
+    }
 }
 
 void MainWindow::onViewButton()
@@ -650,6 +673,76 @@ double MainWindow::getSumOfColumn(int columnToSum)
     }
 
     return sum;
+
+}
+
+bool MainWindow::conditionallySendMailWithInvoice(QString fileName)
+{
+    if(!this->ui->generator_sendemail->isChecked()) {
+        return false;
+    }
+
+    SmtpClient::ConnectionType type = SmtpClient::TcpConnection;
+    if(ui->settings_smtpssl->isChecked()) {
+        type = SmtpClient::SslConnection;
+    } else if(ui->settings_smtptls->isChecked()) {
+        type = SmtpClient::TlsConnection;
+    }
+    QString host = ui->settings_smtphost->text();
+    bool convert = true;
+    int port = ui->settings_smtpport->text().toInt(&convert);
+    if(!convert) {
+        showError("O nie!", "Port nie jest numerem");
+        return false;
+    }
+    QString login = ui->settings_smtpuser->text();
+    QString password = ui->settings_smtppassword->text();
+
+    QString from = ui->settings_smtpsender->text();
+    QString to = ui->generator_emailadress->text();
+    QString title = formatStringWithAvalaibleTags(ui->generator_emailtitle->text());
+    QString content = formatStringWithAvalaibleTags(ui->generator_emailcontent->toPlainText());
+
+    SmtpClient smtp(host, port, type);
+    smtp.setUser(login);
+    smtp.setPassword(password);
+    MimeMessage message;
+    EmailAddress sender(from, from);
+    message.setSender(&sender);
+    EmailAddress receiver(to, to);
+    message.addRecipient(&receiver);
+    message.setSubject(title);
+    MimeText text;
+    text.setText(content);
+    message.addPart(&text);
+
+    MimeAttachment document(new QFile(fileName));
+    message.addPart(&document);
+
+
+    if (!smtp.connectToHost()) {
+            showError("O nie!", "Nie można połączyć się z hostem: " + host + ":" + QString::number(port));
+            smtp.quit();
+            return false;
+        }
+
+        if (!smtp.login()) {
+            showError("O nie!", "Nie można połączyć się zalogować: " + login);
+            smtp.quit();
+            return false;
+        }
+
+        if (!smtp.sendMail(message)) {
+            showError("O nie!", "Nie można wysłać maila");
+            smtp.quit();
+            return false;
+        }
+
+
+    showInformation("Wysłano", "Pomyślnie wysłano e-mail z fakturą!");
+    smtp.quit();
+    return true;
+
 
 }
 

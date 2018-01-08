@@ -3,6 +3,7 @@
 
 #include "invoicestockcreator.h"
 #include "settingsmanager.h"
+#include "SmtpClient/src/SmtpMime"
 
 #include <QSettings>
 #include <QtWidgets>
@@ -32,6 +33,9 @@ public:
 
     void writeSettings();
     void loadSettings();
+
+    void showError(QString title, QString text);
+    void showInformation(QString title, QString text);
 
     void closeEvent(QCloseEvent* event);
     enum AppArea {
@@ -76,7 +80,7 @@ private:
 
     SettingsManager settingsManager;
 
-    void printToPDF(QString html, QString fileName, QPageLayout layout);
+    bool printToPDF(QString html, QString fileName, QPageLayout layout);
 
     void writeWindowSettings();
     void writeSellerSettings();
@@ -96,7 +100,7 @@ private:
 
     void incrementInvoiceNumberInSettings();
 
-    void generateInvoicePDFToFile(QString fileName);
+    bool generateInvoicePDFToFile(QString fileName);
 
     void removeTempFiles();
 
@@ -129,6 +133,8 @@ private:
     double getSumOfNettoAfterDiscounts();
 
     double getSumOfColumn(int column);
+
+    bool conditionallySendMailWithInvoice(QString fileName);
 
 
 };
