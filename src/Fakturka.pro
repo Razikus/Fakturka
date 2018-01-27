@@ -48,10 +48,3 @@ FORMS += \
 RESOURCES += \
     res/resources.qrc
 
-
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/libs/smtpclient_build/release/ -lSMTPEmail
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libs/smtpclient_build/debug/ -lSMTPEmail
-else:unix: LIBS += -L$$PWD/libs/smtpclient_build/ -lSMTPEmail
-
-INCLUDEPATH += $$PWD/libs/smtpclient_build/release
-DEPENDPATH += $$PWD/libs/smtpclient_build/release
